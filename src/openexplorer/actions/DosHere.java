@@ -1,7 +1,6 @@
 package openexplorer.actions;
-
 /**
- * Copyright (c) 2011 Samson Wu
+ * Copyright (c) 2011 zhiyanan
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -22,60 +21,37 @@ package openexplorer.actions;
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  */
-
 import java.io.IOException;
-
-import openexplorer.Activator;
-import openexplorer.util.Messages;
-import openexplorer.util.OperatingSystem;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.TreePath;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IActionDelegate;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
-/**
- * @author <a href="mailto:samson959@gmail.com">Samson Wu</a>
- * @version 1.4.0
- */
-public abstract class AbstractOpenExplorerAction implements IActionDelegate, IPropertyChangeListener {
-	protected IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-	protected Shell shell;
+import openexplorer.util.Messages;
+import openexplorer.util.OperatingSystem;
+
+public class DosHere implements IActionDelegate {
+
 	protected ISelection currentSelection;
+	protected IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 
-	protected String systemBrowser;
-
-	public AbstractOpenExplorerAction() {
-		this.systemBrowser = OperatingSystem.INSTANCE.getSystemBrowser();
-		Activator.getDefault().getPreferenceStore().addPropertyChangeListener(this);
+	public DosHere() {
+		// TODO Auto-generated constructor stub
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.eclipse.jface.util.IPropertyChangeListener#propertyChange(org.eclipse
-	 * .jface.util.PropertyChangeEvent)
-	 */
-	public void propertyChange(PropertyChangeEvent event) {
-		if (OperatingSystem.INSTANCE.isLinux()) {
-			this.systemBrowser = OperatingSystem.INSTANCE.getSystemBrowser();
-		}
-	}
-
+	
 	public void run(IAction action) {
+
 		
 		if (this.currentSelection == null || this.currentSelection.isEmpty()) {
 			return;
@@ -95,48 +71,45 @@ public abstract class AbstractOpenExplorerAction implements IActionDelegate, IPr
 				if (resource == null) {
 					continue;
 				}
-				String browser = this.systemBrowser;
 				String location = resource.getLocation().toOSString();
 				if ((resource instanceof IFile)) {
 					location = ((IFile) resource).getParent().getLocation().toOSString();
-					if (OperatingSystem.INSTANCE.isWindows()) {
-						browser = this.systemBrowser + " /select,";
-						location = ((IFile) resource).getLocation().toOSString();
-					}
 				}
-				openInBrowser(browser, location);
+				openInTerminal( location);
+				return ;
 			}
 		} else if (this.currentSelection instanceof ITextSelection
 				|| this.currentSelection instanceof IStructuredSelection) {
-			// open current editing file
 			IEditorPart editor = window.getActivePage().getActiveEditor();
 			if (editor != null) {
 				IFile current_editing_file = (IFile) editor.getEditorInput().getAdapter(IFile.class);
-				String browser = this.systemBrowser;
 				String location = current_editing_file.getParent().getLocation().toOSString();
-				if (OperatingSystem.INSTANCE.isWindows()) {
-					browser = this.systemBrowser + " /select,";
-					location = current_editing_file.getLocation().toOSString();
-				}
-				openInBrowser(browser, location);
+				
+				openInTerminal( location);
+				return ;
 			}
 		}
+		
+		MessageDialog.openError(window.getShell(), Messages.OpenExploer_Error, Messages.Cant_Open + " Unsupport selection:" + this.currentSelection);
+	
 	}
-
-	protected void openInBrowser(String browser, String location) {
+	
+	protected void openInTerminal(String location) {
 		try {
 			if (OperatingSystem.INSTANCE.isWindows()) {
-				Runtime.getRuntime().exec(browser + " \"" + location + "\"");
+				Runtime.getRuntime().exec("cmd /c start cmd /k cd /d " + " \"" + location + "\"");
 			} else {
-				Runtime.getRuntime().exec(new String[] { browser, location });
+				MessageDialog.openError(window.getShell(), Messages.OpenExploer_Error, Messages.Cant_Open + " Only support windows now");
 			}
 		} catch (IOException e) {
-			MessageDialog.openError(shell, Messages.OpenExploer_Error, Messages.Cant_Open + " \"" + location + "\"");
+			MessageDialog.openError(window.getShell(), Messages.OpenExploer_Error, Messages.Cant_Open + " \"" + location + "\"");
 			e.printStackTrace();
 		}
 	}
 
 	public void selectionChanged(IAction action, ISelection selection) {
 		this.currentSelection = selection;
+
 	}
+
 }
