@@ -23,12 +23,18 @@
             objectClass="org.eclipse.core.runtime.IAdaptable"
             id="OpenExplorer.popupMenuContribution">
          <action
-               label="Open Explorer"
+               label="Open Explorer(&amp;Q)"
                icon="icons/OpenExplorer.png"
                class="openexplorer.actions.OpenExplorerPopupAction"
                menubarPath="additions"
                enablesFor="*"
                id="OpenExplorer.popupMenuAction">
+         </action>
+         <action
+               class="openexplorer.actions.DosHere"
+               id="OpenExplorer.action1"
+               label="DosHere(&amp;D)"
+               menubarPath="additions">
          </action>
       </objectContribution>
    </extension>
