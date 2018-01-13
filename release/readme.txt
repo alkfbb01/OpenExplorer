@@ -1,0 +1,1 @@
+把links与OpenExplorer两个目录 copy到eclipse的home目录下面，重启eclipse即可。
